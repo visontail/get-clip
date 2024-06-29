@@ -5,6 +5,12 @@ import shutil
 import tempfile
 
 def download_instagram_video(url: str):
+    """
+    Download an Instagram video from the provided URL.
+
+    :param url: URL of the Instagram video to be downloaded.
+    :return: Dictionary containing the status and message of the download operation.
+    """
     try:
         loader = instaloader.Instaloader(dirname_pattern="{target}", filename_pattern="{date_utc}_UTC_{shortcode}")
         shortcode = url.split('/')[-2]

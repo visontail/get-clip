@@ -5,6 +5,11 @@ instagram_bp = Blueprint('instagram', __name__)
 
 @instagram_bp.route('/download', methods=['POST'])
 def download_instagram():
+    """
+    Download an Instagram video from the provided URL.
+
+    :return: Dictionary containing the status and message of the download operation.
+    """
     data = request.get_json()
     url = data.get('url')
     response = download_instagram_video(url)

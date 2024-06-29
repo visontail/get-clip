@@ -6,6 +6,11 @@ tiktok_bp = Blueprint('tiktok', __name__)
 
 @tiktok_bp.route('/download', methods=['POST'])
 def download_tiktok():
+    """
+    Download a TikTok video from the provided URL.
+
+    :return: Dictionary containing the status and message of the download operation.
+    """
     data = request.get_json()
     url = data.get('url')
 

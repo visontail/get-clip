@@ -1,7 +1,7 @@
 from pytube import YouTube
 from app.utils.path_processor import ensure_download_path
 
-def download_youtube_video(url):
+def download_youtube_video(url : str):
     try:
         yt = YouTube(url)
         stream = yt.streams.get_highest_resolution()

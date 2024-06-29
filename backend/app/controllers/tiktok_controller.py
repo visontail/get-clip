@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.services.tiktok_service import download_tiktok_video
+from app.utils.path_processor import ensure_download_path
 
 tiktok_bp = Blueprint('tiktok', __name__)
 
@@ -7,8 +8,20 @@ tiktok_bp = Blueprint('tiktok', __name__)
 def download_tiktok():
     data = request.get_json()
     url = data.get('url')
-    response = download_tiktok_video(url)
-    if response['status'] == 'OK':
+
+    try:
+        download_path = ensure_download_path()
+        video_path = download_tiktok_video(url, download_path)
+
+        response = {
+            'status': 'OK',
+            'message': 'Video downloaded successfully.',
+            'video_path': video_path
+        }
         return jsonify(response), 200
-    else:
+    except ValueError as e:
+        response = {
+            'status': 'Error',
+            'message': str(e)
+        }
         return jsonify(response), 500

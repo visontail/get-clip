@@ -1,63 +1,57 @@
-# Import necessary modules
-from TikTokApi import TikTokApi
-import os
 import requests
-import re
+from requests.models import InvalidURL
 
-def extract_video_id(url: str) -> str:
+BASE_URL = 'https://www.tikwm.com'
+
+def get_media(url: str) -> list[dict]:
     """
-    Extracts the video ID from a TikTok video URL.
+    Fetches media information from a TikTok URL.
 
-    :param url: TikTok video URL.
-    :return: Video ID extracted from the URL.
-    :raises ValueError: If the URL is invalid or the video ID cannot be extracted.
+    :param url (str): The TikTok URL.
+
+    :return: list[dict]: A list of dictionaries containing media information. Each dictionary has the following keys:
+            - url (str): The URL of the media.
+            - type (str): The type of the media (e.g., 'video', 'music').
+            - watermark (bool): Indicates whether the media has a watermark.
     """
-    # Regular expressions for different TikTok URL formats
-    patterns = [
-        r"/@[\w\-\.]+/video/(\d+)",          # Format: https://www.tiktok.com/@username/video/video_id
-        r"/video/(\d+)\?"                    # Format: https://vm.tiktok.com/video/video_id?
-    ]
+    response = requests.post(f'{BASE_URL}/api/', data={'url': url, 'count': 12, 'cursor': 0, 'web': 1, 'hd': 1})
+    res = response.json()
+    if res['code'] == 0:
+        return [
+            {
+                'url': BASE_URL + res['data'].get('hdplay', res['data']['play']),
+                'type': 'video',
+                'watermark': False
+            },
+            {
+                'url': BASE_URL + res['data']['wmplay'],
+                'type': 'video',
+                'watermark': True
+            },
+            {
+                'url': BASE_URL + res['data']['music'],
+                'type': 'music',
+                'watermark': False
+            }
+        ]
+    else:
+        raise InvalidURL(res['msg'])
 
-    for pattern in patterns:
-        match = re.search(pattern, url)
-        if match:
-            return match.group(1)
-
-    raise ValueError("Invalid TikTok video URL. Unable to extract video ID.")
-
-def download_tiktok_video(url: str, download_path: str) -> str:
+def get_tiktok_download_urls(tiktok_url: str) -> list[dict]:
     """
-    Download a TikTok video from the provided URL.
+    Fetches the download URLs for the media associated with a TikTok video.
 
-    :param url: URL of the TikTok video to be downloaded.
-    :param download_path: Path where the downloaded video will be saved.
-    :return: Path to the downloaded video file.
-    :raises ValueError: If the URL is invalid or downloading fails.
+    :param tiktok_url (str): The URL of the TikTok video.
+
+    :returns: list[dict]: A list of dictionaries containing the download URLs for the media.
+                Each dictionary contains the following keys:
+                    - 'url': The download URL of the media.
+                    - 'type': The type of the media (e.g., 'video', 'image').
     """
     try:
-        # Initialize TikTokApi
-        api = TikTokApi()
-
-        # Extract video ID from URL
-        video_id = extract_video_id(url)
-
-        # Fetch video metadata (e.g., video URL)
-        video_info = api.getTikTokById(video_id)
-        video_url = video_info['itemInfo']['itemStruct']['video']['downloadAddr']
-
-        # Download video
-        response = requests.get(video_url)
-        response.raise_for_status()
-
-        # Create file path
-        video_path = os.path.join(download_path, f"{video_id}.mp4")
-
-        # Save video file
-        with open(video_path, 'wb') as f:
-            f.write(response.content)
-
-        return video_path
-    except ValueError as ve:
-        raise ve
+        # Get the media download links
+        download_links = get_media(tiktok_url)
+        return download_links
     except Exception as e:
-        raise ValueError(f"Error downloading TikTok video: {str(e)}")
+        print(f"Error fetching TikTok download URLs: {str(e)}")
+        raise

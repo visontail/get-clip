@@ -1,32 +1,27 @@
 from flask import Blueprint, request, jsonify
-from app.services.tiktok_service import download_tiktok_video
-from app.utils.path_processor import ensure_download_path
+from app.services.tiktok_service import get_tiktok_download_urls
 
 tiktok_bp = Blueprint('tiktok', __name__)
 
 @tiktok_bp.route('/download', methods=['POST'])
-def download_tiktok():
-    """
-    Download a TikTok video from the provided URL.
-
-    :return: Dictionary containing the status and message of the download operation.
-    """
-    data = request.get_json()
-    url = data.get('url')
-
+def handle_tiktok_download():
     try:
-        download_path = ensure_download_path()
-        video_path = download_tiktok_video(url, download_path)
+        # Extract TikTok URL from the request
+        tiktok_url = request.json.get('url')
 
-        response = {
-            'status': 'OK',
-            'message': 'Video downloaded successfully.',
-            'video_path': video_path
-        }
-        return jsonify(response), 200
-    except ValueError as e:
-        response = {
-            'status': 'Error',
-            'message': str(e)
-        }
-        return jsonify(response), 500
+        if not tiktok_url:
+            return jsonify({'error': 'TikTok URL is required'}), 400  # HTTP 400 Bad Request
+
+        # Get the download URL
+        download_links = get_tiktok_download_urls(tiktok_url)
+
+        # Return the download URL
+        return jsonify({'downloadUrl': download_links}), 200  # HTTP 200 OK
+
+    except ValueError as ve:
+        print(f"ValueError in TikTok download handler: {str(ve)}")
+        return jsonify({'error': str(ve)}), 404  # HTTP 404 Not Found
+
+    except Exception as e:
+        print(f"Error in TikTok download handler: {str(e)}")
+        return jsonify({'error': 'Failed to get download URL'}), 500  # HTTP 500 Internal Server Error

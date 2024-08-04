@@ -10,16 +10,18 @@ import DownloaderForm from './components/DownloaderForm.vue';
 export default {
   name: 'App',
   components: {
-    DownloaderForm
-  }
+    DownloaderForm,
+  },
 };
 </script>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+  margin: 0;
 }
 </style>

@@ -7,7 +7,6 @@ youtube_bp = Blueprint('youtube', __name__)
 def download_youtube():
     """
     Download a YouTube video from the provided URL.
-
     :return: Dictionary containing the status and message of the download operation.
     """
     data = request.get_json()

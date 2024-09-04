@@ -1,2 +1,4 @@
 # get-clip
-Download content from social media platforms
+API for downloading content from social media platforms (Youtube, TikTok, Instagram)
+
+*detailed description / documentation coming soon...*
